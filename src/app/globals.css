@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Brand Colours ── */
+  --color-wm-green:      #08523C;
+  --color-wm-mint:       #3BF4BE;
+  --color-wm-mint-light: #D4F5EC;
+  --color-wm-pink:       #DB3C8A;
+  --color-wm-blue-pale:  #B8D8F0;
+  --color-wm-pink-pale:  #F5C0D8;
+  --color-wm-green-pale: #C0E8C0;
+  --color-wm-blush:      #F5D0DA;
+  --color-wm-maroon:     #7A1A35;
+
+  /* ── Typography ── */
+  --font-display: var(--font-bueno), Impact, "Arial Black", sans-serif;
+  --font-body:    var(--font-dm-sans), sans-serif;
+
+  /* ── Animations ── */
+  --animate-marquee:  marquee  25s linear infinite;
+  --animate-marquee2: marquee2 25s linear infinite;
+  --animate-blob:     blob     7s  ease-in-out infinite;
+  --animate-float:    float    6s  ease-in-out infinite;
+  --animate-spin-slow: spin 8s linear infinite;
+}
+
+/* ── Keyframes ── */
+@keyframes marquee {
+  0%   { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes marquee2 {
+  0%   { transform: translateX(50%); }
+  100% { transform: translateX(0%); }
+}
+@keyframes blob {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  50%       { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+
+/* ── Base ── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar       { width: 5px; }
+::-webkit-scrollbar-track { background: #1B3A2D; }
+::-webkit-scrollbar-thumb { background: #3ECFAB; border-radius: 3px; }
+
+/* ── Arch shape ── */
+.arch-top {
+  border-radius: 50% 50% 0 0 / 40% 40% 0 0;
+}
+
+/* ── Ticker pause on hover ── */
+.ticker-wrapper:hover .ticker-track {
+  animation-play-state: paused;
+}
