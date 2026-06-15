@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Brand Colours (sampled from Landing Page.png) ── */
+  --color-wm-green:      #00281c;  /* dark forest — hero / social / footer / dark cards */
+  --color-wm-mint:       #3bf4be;  /* bright mint — hero heading, sparkles, accents */
+  --color-wm-mint-btn:   #13c490;  /* CTA green button */
+  --color-wm-mint-soft:  #d0f7e4;  /* step 1 band, hybrid card, final CTA band */
+  --color-wm-cream:      #f0f3c8;  /* step 2 band, escrow card */
+  --color-wm-pink-soft:  #f7d0e3;  /* delivered band, order-tracking card */
+  --color-wm-peach:      #f5cfc6;  /* benefits card, stats blush bg */
+  --color-wm-pink:       #db3c8a;  /* hot pink pill / highlight */
+  --color-wm-maroon:     #9b1f15;  /* stats numbers */
+  --color-wm-gray:       #f7f7f7;  /* FAQ cards */
+  --color-wm-orange:     #ef5a23;  /* feature accent dot */
+  --color-wm-lime:       #c4e000;  /* feature accent dot */
+
+  /* ── Typography ── */
+  --font-display: var(--font-bueno), Impact, "Arial Black", sans-serif;
+  --font-body:    var(--font-dm-sans), sans-serif;
+
+  /* ── Animations ── */
+  --animate-marquee:  marquee  25s linear infinite;
+  --animate-marquee2: marquee2 25s linear infinite;
+  --animate-blob:     blob     7s  ease-in-out infinite;
+  --animate-float:    float    6s  ease-in-out infinite;
+  --animate-spin-slow: spin 8s linear infinite;
+}
+
+/* ── Keyframes ── */
+@keyframes marquee {
+  0%   { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes marquee2 {
+  0%   { transform: translateX(50%); }
+  100% { transform: translateX(0%); }
+}
+@keyframes blob {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  50%       { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+
+/* ── Base ── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar       { width: 5px; }
+::-webkit-scrollbar-track { background: #1B3A2D; }
+::-webkit-scrollbar-thumb { background: #3ECFAB; border-radius: 3px; }
+
+/* ── Arch shape ── */
+.arch-top {
+  border-radius: 50% 50% 0 0 / 40% 40% 0 0;
+}
+
+/* ── Ticker pause on hover ── */
+.ticker-wrapper:hover .ticker-track {
+  animation-play-state: paused;
+}
