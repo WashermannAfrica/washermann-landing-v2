@@ -21,7 +21,7 @@ export default function Hero() {
           </motion.h1>
           <motion.div variants={fadeUp} className="relative my-1 inline-flex items-center justify-center">
             <span aria-hidden className="absolute inset-0 -mx-6 rounded-full bg-wm-pink" style={{ transform: "rotate(-2deg)" }} />
-            <span className={`relative px-6 ${HEAD} !text-white`}>Laundry isn&apos;t one</span>
+            <span className={`relative px-6 ${HEAD} text-white!`}>Laundry shouldn&apos;t be one</span>
           </motion.div>
         </motion.div>
 
