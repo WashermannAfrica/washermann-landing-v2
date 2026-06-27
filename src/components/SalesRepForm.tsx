@@ -3,15 +3,15 @@
 import { useState } from "react";
 import AreaSelect from "./AreaSelect";
 
-export default function WashRepForm({ onClose }: { onClose: () => void }) {
+export default function SalesRepForm({ onClose }: { onClose: () => void }) {
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
     email: "",
     areaOfLagos: "",
     address: "",
-    workedLogistics: "",
-    workedLaundromat: "",
+    hasSalesExperience: "",
+    whyJoin: "",
   });
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
 
@@ -24,19 +24,23 @@ export default function WashRepForm({ onClose }: { onClose: () => void }) {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (status === "loading") return;
-    if (!form.workedLogistics || !form.workedLaundromat) {
+    if (!form.hasSalesExperience) {
       setStatus("error");
       return;
     }
     setStatus("loading");
     try {
-      const res = await fetch("/api/wash-rep", {
+      const res = await fetch("/api/sales-rep", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...form,
-          workedLogistics: form.workedLogistics === "yes",
-          workedLaundromat: form.workedLaundromat === "yes",
+          fullName: form.fullName,
+          phone: form.phone,
+          email: form.email,
+          areaOfLagos: form.areaOfLagos,
+          address: form.address,
+          hasSalesExperience: form.hasSalesExperience === "yes",
+          whyJoin: form.whyJoin || undefined,
         }),
       });
       if (!res.ok) throw new Error();
@@ -64,7 +68,8 @@ export default function WashRepForm({ onClose }: { onClose: () => void }) {
           <div className="py-10 text-center">
             <p className="font-display text-3xl tracking-tight text-wm-green">Application received! 🎉</p>
             <p className="mt-3 font-body text-sm text-wm-green/70">
-              Thanks for applying to become a Wash Rep. Our team will reach out to you soon.
+              Thanks for applying to become a Washermann Sales Rep. Our team will review your
+              application and email you an invite to get started.
             </p>
             <button
               onClick={onClose}
@@ -75,16 +80,16 @@ export default function WashRepForm({ onClose }: { onClose: () => void }) {
           </div>
         ) : (
           <>
-            <h3 className="font-display text-2xl tracking-tight text-wm-green">Become a Wash Rep</h3>
+            <h3 className="font-display text-2xl tracking-tight text-wm-green">Become a Sales Rep</h3>
             <p className="mt-1 font-body text-sm text-wm-green/60">
-              Tell us a bit about you and we&apos;ll be in touch.
+              Earn cash for every customer and vendor you bring to Washermann.
             </p>
 
             <form onSubmit={onSubmit} className="mt-5 flex flex-col gap-4">
 
               <div className="flex flex-col gap-1.5">
                 <label className={label}>Full name</label>
-                <input required value={form.fullName} onChange={set("fullName")} className={field} placeholder="e.g. Tunde Bello" />
+                <input required value={form.fullName} onChange={set("fullName")} className={field} placeholder="e.g. Ada Obi" />
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -108,11 +113,20 @@ export default function WashRepForm({ onClose }: { onClose: () => void }) {
                 <textarea required rows={2} value={form.address} onChange={set("address")} className={field} placeholder="Your home address" />
               </div>
 
-              <YesNo label="Have you worked as a logistics person before?" value={form.workedLogistics} onChange={(v) => setForm((f) => ({ ...f, workedLogistics: v }))} labelCls={label} />
-              <YesNo label="Have you worked in a laundromat or laundry shop before?" value={form.workedLaundromat} onChange={(v) => setForm((f) => ({ ...f, workedLaundromat: v }))} labelCls={label} />
+              <YesNo
+                label="Have you worked in sales or marketing before?"
+                value={form.hasSalesExperience}
+                onChange={(v) => setForm((f) => ({ ...f, hasSalesExperience: v }))}
+                labelCls={label}
+              />
+
+              <div className="flex flex-col gap-1.5">
+                <label className={label}>Why do you want to join? <span className="font-normal text-wm-green/50">(optional)</span></label>
+                <textarea rows={3} value={form.whyJoin} onChange={set("whyJoin")} className={field} placeholder="Tell us about your network or why you'd be a great Sales Rep" />
+              </div>
 
               {status === "error" && (
-                <p className="font-body text-sm text-wm-pink">Something went wrong. Please try again.</p>
+                <p className="font-body text-sm text-wm-pink">Please complete all required fields and try again.</p>
               )}
 
               <button
