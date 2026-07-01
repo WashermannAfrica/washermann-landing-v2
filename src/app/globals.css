@@ -16,7 +16,7 @@
   --color-wm-lime:       #c4e000;  /* feature accent dot */
 
   /* ── Typography ── */
-  --font-display: var(--font-bueno), Impact, "Arial Black", sans-serif;
+  --font-display: var(--font-display-src), "Helvetica Neue", Arial, sans-serif;
   --font-body:    var(--font-dm-sans), sans-serif;
 
   /* ── Animations ── */

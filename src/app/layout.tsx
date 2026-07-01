@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
-import localFont from "next/font/local";
+import { DM_Sans, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 
-const bueno = localFont({
-  src: "../../public/fonts/Bueno.woff2",
-  variable: "--font-bueno",
+// Display/heading font — replaced Bueno (hard to read on mobile) with a bolder,
+// more legible grotesque that keeps brand character.
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-display-src",
+  subsets: ["latin"],
   display: "swap",
-  fallback: ["Impact", "Arial Black", "sans-serif"],
+  fallback: ["Helvetica Neue", "Arial", "sans-serif"],
 });
 
 const dmSans = DM_Sans({
@@ -29,7 +30,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${bueno.variable} ${dmSans.variable} scroll-smooth`}
+      className={`${bricolage.variable} ${dmSans.variable} scroll-smooth`}
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col antialiased overflow-x-hidden bg-wm-green">
         {children}
