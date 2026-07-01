@@ -38,7 +38,7 @@ export default function Footer() {
         <div className="grid gap-12 md:grid-cols-2">
           <div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Washermann" className="mb-6 h-9 w-auto" />
+            <img src="/wordmark.png" alt="Washermann" className="mb-6 h-10 w-auto" />
             <p className="max-w-sm font-body text-sm leading-relaxed text-white/70">
               The laundry benefit platform connecting employees to trusted service providers, with
               full company controls and financial transparency.
