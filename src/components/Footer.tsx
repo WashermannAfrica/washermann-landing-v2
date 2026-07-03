@@ -6,17 +6,17 @@ const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] =
     links: [
       { label: "About Us", href: "#" },
       { label: "Careers", href: "#" },
-      { label: "Blog", href: "#" },
+      { label: "Blog", href: "/blog" },
       { label: "Contact", href: whatsappLink("Hi Washermann!") },
     ],
   },
   {
     heading: "Product",
     links: [
-      { label: "Why Washermann", href: "#why" },
-      { label: "How It Works", href: "#how-it-works" },
-      { label: "Who it's for", href: "#who" },
-      { label: "FAQ", href: "#faq" },
+      { label: "Why Washermann", href: "/#why" },
+      { label: "How It Works", href: "/#how-it-works" },
+      { label: "Who it's for", href: "/#who" },
+      { label: "FAQ", href: "/#faq" },
     ],
   },
   {
