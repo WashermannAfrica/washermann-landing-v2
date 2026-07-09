@@ -100,7 +100,7 @@ export default function WashRepForm({ onClose }: { onClose: () => void }) {
 
               <div className="flex flex-col gap-1.5">
                 <label className={label}>What area of Lagos do you currently live in?</label>
-                <AreaSelect required value={form.areaOfLagos} onChange={set("areaOfLagos")} className={field} />
+                <AreaSelect required value={form.areaOfLagos} onChange={(v) => setForm((f) => ({ ...f, areaOfLagos: v }))} className={field} />
               </div>
 
               <div className="flex flex-col gap-1.5">
