@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import WashRepForm from "./WashRepForm";
 import SalesRepForm from "./SalesRepForm";
@@ -100,10 +101,26 @@ const PERSONAS: Record<
   },
 };
 
-export default function WhoItsFor() {
+function WhoItsForInner() {
   const [tab, setTab] = useState<Key>("overview");
   const [showWashRep, setShowWashRep] = useState(false);
   const [showSalesRep, setShowSalesRep] = useState(false);
+  const searchParams = useSearchParams();
+
+  // Deep-link: /?apply=sales-rep (or wash-rep) selects the persona tab and opens
+  // its application form — used by the sales-rep / wash-rep portal "Apply" links.
+  useEffect(() => {
+    const apply = searchParams.get("apply");
+    if (apply === "sales-rep" || apply === "salesrep") {
+      setTab("salesrep");
+      setShowSalesRep(true);
+      document.getElementById("who")?.scrollIntoView({ behavior: "smooth" });
+    } else if (apply === "wash-rep" || apply === "washrep") {
+      setTab("washrep");
+      setShowWashRep(true);
+      document.getElementById("who")?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [searchParams]);
 
   return (
     <section id="who" className="bg-wm-peach">
@@ -257,5 +274,14 @@ export default function WhoItsFor() {
       {showWashRep && <WashRepForm onClose={() => setShowWashRep(false)} />}
       {showSalesRep && <SalesRepForm onClose={() => setShowSalesRep(false)} />}
     </section>
+  );
+}
+
+export default function WhoItsFor() {
+  // useSearchParams() requires a Suspense boundary in Next 16.
+  return (
+    <Suspense fallback={null}>
+      <WhoItsForInner />
+    </Suspense>
   );
 }
