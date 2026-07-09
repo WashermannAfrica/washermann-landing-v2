@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AreaSelect from "./AreaSelect";
+
+const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function SalesRepForm({ onClose }: { onClose: () => void }) {
   const [form, setForm] = useState({
@@ -14,6 +16,8 @@ export default function SalesRepForm({ onClose }: { onClose: () => void }) {
     whyJoin: "",
   });
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [taken, setTaken] = useState<{ email: boolean; phone: boolean }>({ email: false, phone: false });
+  const [checking, setChecking] = useState(false);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -21,9 +25,47 @@ export default function SalesRepForm({ onClose }: { onClose: () => void }) {
   const field = "w-full rounded-2xl bg-wm-gray px-4 py-3 font-body text-sm text-wm-green outline-none border border-transparent focus:border-wm-green/30";
   const label = "font-body text-sm font-semibold text-wm-green";
 
+  // Debounced duplicate check — as the applicant fills email/phone
+  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    const email = form.email.trim();
+    const phone = form.phone.trim();
+    const emailValid = emailRe.test(email);
+    const phoneValid = phone.replace(/\D/g, "").length >= 7;
+    if (!emailValid && !phoneValid) {
+      setTaken({ email: false, phone: false });
+      return;
+    }
+    if (debounce.current) clearTimeout(debounce.current);
+    debounce.current = setTimeout(async () => {
+      setChecking(true);
+      try {
+        const qs = new URLSearchParams();
+        if (emailValid) qs.set("email", email);
+        if (phoneValid) qs.set("phone", phone);
+        const res = await fetch(`/api/sales-rep?${qs}`);
+        const json = await res.json().catch(() => ({}));
+        const d = json?.data ?? json ?? {};
+        setTaken({
+          email: emailValid ? !!d.emailTaken : false,
+          phone: phoneValid ? !!d.phoneTaken : false,
+        });
+      } catch {
+        setTaken({ email: false, phone: false }); // never block on a check failure
+      } finally {
+        setChecking(false);
+      }
+    }, 500);
+    return () => {
+      if (debounce.current) clearTimeout(debounce.current);
+    };
+  }, [form.email, form.phone]);
+
+  const blocked = taken.email || taken.phone;
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (status === "loading") return;
+    if (status === "loading" || blocked) return;
     if (!form.hasSalesExperience) {
       setStatus("error");
       return;
@@ -95,17 +137,25 @@ export default function SalesRepForm({ onClose }: { onClose: () => void }) {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
                   <label className={label}>Phone number</label>
-                  <input required type="tel" value={form.phone} onChange={set("phone")} className={field} placeholder="080…" />
+                  <input
+                    required type="tel" value={form.phone} onChange={set("phone")} placeholder="080…"
+                    className={`${field} ${taken.phone ? "border-wm-pink" : ""}`}
+                  />
+                  {taken.phone && <p className="font-body text-xs text-wm-pink">This phone number is already registered. Log in instead, or use another number.</p>}
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className={label}>Email address</label>
-                  <input required type="email" value={form.email} onChange={set("email")} className={field} placeholder="you@email.com" />
+                  <input
+                    required type="email" value={form.email} onChange={set("email")} placeholder="you@email.com"
+                    className={`${field} ${taken.email ? "border-wm-pink" : ""}`}
+                  />
+                  {taken.email && <p className="font-body text-xs text-wm-pink">This email is already registered. Log in instead, or use another email.</p>}
                 </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
                 <label className={label}>What area of Lagos do you currently live in?</label>
-                <AreaSelect required value={form.areaOfLagos} onChange={set("areaOfLagos")} className={field} />
+                <AreaSelect required value={form.areaOfLagos} onChange={(v) => setForm((f) => ({ ...f, areaOfLagos: v }))} className={field} />
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -131,10 +181,10 @@ export default function SalesRepForm({ onClose }: { onClose: () => void }) {
 
               <button
                 type="submit"
-                disabled={status === "loading"}
+                disabled={status === "loading" || blocked || checking}
                 className="mt-1 inline-flex h-12 items-center justify-center rounded-full bg-wm-mint-btn px-7 font-body text-sm font-semibold text-white transition-transform hover:scale-[1.02] disabled:opacity-60"
               >
-                {status === "loading" ? "Submitting…" : "Submit application"}
+                {status === "loading" ? "Submitting…" : checking ? "Checking…" : "Submit application"}
               </button>
             </form>
           </>
