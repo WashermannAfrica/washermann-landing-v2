@@ -31,7 +31,7 @@ export default function Navbar() {
         {/* Brand wordmark */}
         <a href="#top" className="flex items-center gap-2 shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/wordmark.png" alt="Washermann" className="h-8 w-auto" />
+          <img src="/wordmark.png" alt="Washermann" className="h-4 w-auto" />
         </a>
 
         {/* Desktop nav pills */}
