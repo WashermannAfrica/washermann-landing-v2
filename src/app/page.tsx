@@ -10,39 +10,65 @@ import FAQ from "@/components/FAQ";
 import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
 import TornDivider from "@/components/TornDivider";
+import Reveal from "@/components/Reveal";
+import BlindsReveal from "@/components/BlindsReveal";
+import Bubbles from "@/components/Bubbles";
 
 export default function Home() {
   return (
-    <main className="flex flex-col">
+    <main className="relative flex flex-col">
+      {/* Ambient soap bubbles behind everything */}
+      <Bubbles />
+
       <Navbar />
 
+      {/* Hero is above the fold — no reveal, it's the first thing seen */}
       <Hero />
       <TornDivider src="/illustrations/div-green-mint.png" />
 
       {/* Why + How It Works share the mint family, no divider between them */}
-      <WhyWashermann />
-      <HowItWorks />
+      {/* Blinds reveal — dark-green slats (from the Hero) open onto the mint section */}
+      <BlindsReveal cover="#00281c">
+        <WhyWashermann />
+      </BlindsReveal>
+      <Reveal>
+        <HowItWorks />
+      </Reveal>
       <TornDivider src="/illustrations/div-pink-white.png" />
 
-      <Features />
+      <Reveal>
+        <Features />
+      </Reveal>
       {/* white → blush (flip of blush→white) */}
       <TornDivider src="/illustrations/div-blush-white.png" flip />
 
-      <WhoItsFor />
+      {/* Blinds reveal — white slats (from Features) open onto the blush section */}
+      <BlindsReveal cover="#ffffff">
+        <WhoItsFor />
+      </BlindsReveal>
       {/* blush → green (flip of green→blush) */}
       <TornDivider src="/illustrations/div-green-blush.png" flip />
 
-      <FoundingUsers />
+      <Reveal>
+        <FoundingUsers />
+      </Reveal>
       <TornDivider src="/illustrations/div-green-mint.png" />
 
-      <WaitlistCTA />
+      <Reveal>
+        <WaitlistCTA />
+      </Reveal>
       {/* mint → white (flip of white→mint) */}
       <TornDivider src="/illustrations/div-white-mint.png" flip />
 
-      <FAQ />
+      <Reveal>
+        <FAQ />
+      </Reveal>
       <TornDivider src="/illustrations/div-white-mint.png" />
 
-      <FinalCTA />
+      {/* Blinds reveal — white slats (from FAQ) open onto the mint CTA */}
+      <BlindsReveal cover="#ffffff">
+        <FinalCTA />
+      </BlindsReveal>
       <TornDivider src="/illustrations/div-mint-green.png" />
 
       <Footer />

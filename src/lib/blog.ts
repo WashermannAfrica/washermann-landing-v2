@@ -31,30 +31,43 @@ const REVALIDATE = 300; // seconds — publish also triggers on-demand revalidat
 export async function getPosts(page = 1, tag?: string): Promise<{ posts: BlogCardData[]; pages: number }> {
   const qs = new URLSearchParams({ page: String(page), limit: "12" });
   if (tag) qs.set("tag", tag);
-  const res = await fetch(`${API_BASE}/blog?${qs}`, {
-    next: { revalidate: REVALIDATE, tags: ["blog"] },
-  });
-  if (!res.ok) return { posts: [], pages: 0 };
-  const json = await res.json();
-  return { posts: json.data ?? [], pages: json.meta?.pages ?? 0 };
+  try {
+    const res = await fetch(`${API_BASE}/blog?${qs}`, {
+      next: { revalidate: REVALIDATE, tags: ["blog"] },
+    });
+    if (!res.ok) return { posts: [], pages: 0 };
+    const json = await res.json();
+    return { posts: json.data ?? [], pages: json.meta?.pages ?? 0 };
+  } catch {
+    // API unreachable (e.g. during a build) — degrade to empty, revalidate later.
+    return { posts: [], pages: 0 };
+  }
 }
 
 export async function getPost(slug: string): Promise<BlogPostData | null> {
-  const res = await fetch(`${API_BASE}/blog/${encodeURIComponent(slug)}`, {
-    next: { revalidate: REVALIDATE, tags: ["blog", `blog:${slug}`] },
-  });
-  if (!res.ok) return null;
-  const json = await res.json();
-  return json.data ?? null;
+  try {
+    const res = await fetch(`${API_BASE}/blog/${encodeURIComponent(slug)}`, {
+      next: { revalidate: REVALIDATE, tags: ["blog", `blog:${slug}`] },
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function getRelated(slug: string): Promise<BlogCardData[]> {
-  const res = await fetch(`${API_BASE}/blog/${encodeURIComponent(slug)}/related`, {
-    next: { revalidate: REVALIDATE, tags: ["blog"] },
-  });
-  if (!res.ok) return [];
-  const json = await res.json();
-  return json.data ?? [];
+  try {
+    const res = await fetch(`${API_BASE}/blog/${encodeURIComponent(slug)}/related`, {
+      next: { revalidate: REVALIDATE, tags: ["blog"] },
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data ?? [];
+  } catch {
+    return [];
+  }
 }
 
 /** Draft preview for reviewers — never cached, requires the signed token. */
