@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 
 const LINKS = [
-  { label: "Why Washermann", href: "#why" },
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Who it's for", href: "#who" },
-  { label: "FAQ", href: "#faq" },
+  { label: "Why Washermann", href: "/#why" },
+  { label: "How It Works", href: "/#how-it-works" },
+  { label: "Who it's for", href: "/#who" },
+  { label: "Blog", href: "/blog" },
+  { label: "FAQ", href: "/#faq" },
 ];
 
 export default function Navbar() {
@@ -27,10 +28,10 @@ export default function Navbar() {
       }`}
     >
       <nav className="mx-auto flex h-20 max-w-6xl items-center justify-between px-6">
-        {/* Logo mark */}
+        {/* Brand wordmark */}
         <a href="#top" className="flex items-center gap-2 shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="Washermann" className="h-8 w-auto" />
+          <img src="/wordmark.png" alt="Washermann" className="h-8 w-auto" />
         </a>
 
         {/* Desktop nav pills */}

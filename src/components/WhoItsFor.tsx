@@ -1,16 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import WashRepForm from "./WashRepForm";
+import SalesRepForm from "./SalesRepForm";
 import { whatsappLink, WHATSAPP_COMPANY_MESSAGE, SITE } from "@/lib/site";
 
-type Key = "overview" | "employee" | "washrep" | "company" | "individual";
+type Key = "overview" | "employee" | "washrep" | "salesrep" | "company" | "individual";
 
 const TABS: { key: Key; label: string }[] = [
   { key: "overview", label: "Overview" },
   { key: "employee", label: "Employee" },
   { key: "washrep", label: "Wash Rep" },
+  { key: "salesrep", label: "Sales Rep" },
   { key: "company", label: "Company" },
   { key: "individual", label: "Individual" },
 ];
@@ -18,8 +21,9 @@ const TABS: { key: Key; label: string }[] = [
 const CARDS: { key: Key; role: string; blurb: string; icon: string }[] = [
   { key: "employee", role: "Employee", blurb: "Order, track, and pay in seconds.", icon: "/icons/employee.svg" },
   { key: "washrep", role: "Wash Rep", blurb: "Manage pickups, grow your earnings.", icon: "/icons/washerman.svg" },
+  { key: "salesrep", role: "Sales Rep", blurb: "Refer customers & vendors, earn cash.", icon: "/icons/admin.svg" },
   { key: "company", role: "Company", blurb: "Control budgets and reporting.", icon: "/icons/company.svg" },
-  { key: "individual", role: "Individual", blurb: "Order for yourself or gift a week.", icon: "/icons/admin.svg" },
+  { key: "individual", role: "Individual", blurb: "Order for yourself or gift a week.", icon: "/icons/employee.svg" },
 ];
 
 const PERSONAS: Record<
@@ -69,6 +73,22 @@ const PERSONAS: Record<
     ],
     illustration: "/illustrations/persona-company.svg",
   },
+  salesrep: {
+    headline: "Refer, and get paid in cash.",
+    intro: "Bring customers and vendors to Washermann and earn a cash reward for each one.",
+    points: [
+      "Earn cash for every customer and vendor you refer",
+      "Your own referral code, tracked in a personal dashboard",
+      "Request payouts straight to your bank account",
+    ],
+    steps: [
+      "Apply with the form below",
+      "We review and email you an invite",
+      "Complete a short tutorial and assessment",
+      "Get your code and start earning",
+    ],
+    illustration: "/illustrations/persona-salesrep.svg",
+  },
   individual: {
     headline: "No company plan? No problem.",
     intro: "Order for yourself, or gift a laundry-free week to someone you care about.",
@@ -81,9 +101,26 @@ const PERSONAS: Record<
   },
 };
 
-export default function WhoItsFor() {
+function WhoItsForInner() {
   const [tab, setTab] = useState<Key>("overview");
   const [showWashRep, setShowWashRep] = useState(false);
+  const [showSalesRep, setShowSalesRep] = useState(false);
+  const searchParams = useSearchParams();
+
+  // Deep-link: /?apply=sales-rep (or wash-rep) selects the persona tab and opens
+  // its application form — used by the sales-rep / wash-rep portal "Apply" links.
+  useEffect(() => {
+    const apply = searchParams.get("apply");
+    if (apply === "sales-rep" || apply === "salesrep") {
+      setTab("salesrep");
+      setShowSalesRep(true);
+      document.getElementById("who")?.scrollIntoView({ behavior: "smooth" });
+    } else if (apply === "wash-rep" || apply === "washrep") {
+      setTab("washrep");
+      setShowWashRep(true);
+      document.getElementById("who")?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [searchParams]);
 
   return (
     <section id="who" className="bg-wm-peach">
@@ -129,7 +166,7 @@ export default function WhoItsFor() {
                   <button
                     key={c.key}
                     onClick={() => setTab(c.key)}
-                    style={{ rotate: `${[-3, 2, -1.5, 3][i]}deg` }}
+                    style={{ rotate: `${[-3, 2, -1.5, 3, -2][i]}deg` }}
                     className="flex flex-col items-center gap-5 rounded-3xl bg-wm-green px-5 py-8 text-center transition-transform hover:-translate-y-1.5"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -206,6 +243,13 @@ export default function WhoItsFor() {
                       >
                         Become a Wash Rep
                       </button>
+                    ) : tab === "salesrep" ? (
+                      <button
+                        onClick={() => setShowSalesRep(true)}
+                        className="inline-flex h-12 items-center justify-center rounded-full bg-wm-mint-btn px-7 font-body text-sm font-semibold text-white transition-transform hover:scale-[1.03]"
+                      >
+                        Become a Sales Rep
+                      </button>
                     ) : (
                       <a
                         href="#waitlist"
@@ -228,6 +272,16 @@ export default function WhoItsFor() {
       </div>
 
       {showWashRep && <WashRepForm onClose={() => setShowWashRep(false)} />}
+      {showSalesRep && <SalesRepForm onClose={() => setShowSalesRep(false)} />}
     </section>
+  );
+}
+
+export default function WhoItsFor() {
+  // useSearchParams() requires a Suspense boundary in Next 16.
+  return (
+    <Suspense fallback={null}>
+      <WhoItsForInner />
+    </Suspense>
   );
 }
