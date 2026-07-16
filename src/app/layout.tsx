@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
+import EnvBadge from "@/components/EnvBadge";
 
 // Display/heading font — replaced Bueno (hard to read on mobile) with a bolder,
 // more legible grotesque that keeps brand character.
@@ -34,6 +35,7 @@ export default function RootLayout({
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col antialiased overflow-x-hidden bg-wm-green">
         {children}
+        <EnvBadge />
       </body>
     </html>
   );
