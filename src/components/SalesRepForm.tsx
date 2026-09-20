@@ -16,6 +16,7 @@ export default function SalesRepForm({ onClose }: { onClose: () => void }) {
     whyJoin: "",
   });
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [agreed, setAgreed] = useState(false);
   const [taken, setTaken] = useState<{ email: boolean; phone: boolean }>({ email: false, phone: false });
   const [checking, setChecking] = useState(false);
 
@@ -179,9 +180,24 @@ export default function SalesRepForm({ onClose }: { onClose: () => void }) {
                 <p className="font-body text-sm text-wm-pink">Please complete all required fields and try again.</p>
               )}
 
+              <label className="flex items-start gap-2.5 font-body text-xs leading-relaxed text-wm-green/80">
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-wm-green/30"
+                />
+                <span>
+                  I agree to Washermann&apos;s{" "}
+                  <a href="/legal/rep-agreement" target="_blank" rel="noopener noreferrer" className="font-semibold underline">Rep Agreement</a>,{" "}
+                  <a href="/legal/terms-of-service" target="_blank" rel="noopener noreferrer" className="font-semibold underline">Terms of Service</a>, and{" "}
+                  <a href="/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="font-semibold underline">Privacy Policy</a>.
+                </span>
+              </label>
+
               <button
                 type="submit"
-                disabled={status === "loading" || blocked || checking}
+                disabled={status === "loading" || blocked || checking || !agreed}
                 className="mt-1 inline-flex h-12 items-center justify-center rounded-full bg-wm-mint-btn px-7 font-body text-sm font-semibold text-white transition-transform hover:scale-[1.02] disabled:opacity-60"
               >
                 {status === "loading" ? "Submitting…" : checking ? "Checking…" : "Submit application"}

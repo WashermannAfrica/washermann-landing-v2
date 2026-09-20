@@ -28,6 +28,15 @@ const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] =
       { label: "X / Twitter", href: SITE.twitter },
     ],
   },
+  {
+    heading: "Legal",
+    links: [
+      { label: "All Policies", href: "/legal" },
+      { label: "Privacy Policy", href: "/legal/privacy-policy" },
+      { label: "Terms of Service", href: "/legal/terms-of-service" },
+      { label: "Cookie Policy", href: "/legal/cookie-policy" },
+    ],
+  },
 ];
 
 export default function Footer() {
@@ -66,7 +75,7 @@ export default function Footer() {
         <div className="my-10 h-px w-full bg-white/15" />
 
         {/* Nav columns */}
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           {COLUMNS.map((col) => (
             <div key={col.heading}>
               <h4 className="font-body text-sm font-semibold text-white">{col.heading}</h4>
