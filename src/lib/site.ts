@@ -6,7 +6,6 @@ export const SITE = {
   twitter: "https://x.com/washermann_",
   linkedin: "https://www.linkedin.com/company/washermann-africa/",
   facebook: "https://www.facebook.com/profile.php?id=61590357915442",
-  // TODO: replace with the real WhatsApp business number (international format, no +).
   whatsappNumber: "+2349049507121",
 };
 
