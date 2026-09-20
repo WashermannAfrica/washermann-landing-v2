@@ -13,10 +13,22 @@ import TornDivider from "@/components/TornDivider";
 import Reveal from "@/components/Reveal";
 import BlindsReveal from "@/components/BlindsReveal";
 import Bubbles from "@/components/Bubbles";
+import { organizationJsonLd, webSiteJsonLd, serviceJsonLd } from "@/lib/seo";
 
 export default function Home() {
+  // Brand + site + service structured data — the entity signals Google uses for
+  // the knowledge panel, sitelinks search box, and local service understanding.
+  const graph = {
+    "@context": "https://schema.org",
+    "@graph": [organizationJsonLd(), webSiteJsonLd(), serviceJsonLd()],
+  };
+
   return (
     <main className="relative flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(graph) }}
+      />
       {/* Ambient soap bubbles behind everything */}
       <Bubbles />
 

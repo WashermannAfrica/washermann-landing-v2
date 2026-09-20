@@ -5,15 +5,26 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BlogArticle from "@/components/blog/BlogArticle";
 import BlogCard from "@/components/blog/BlogCard";
-import { getPost, getRelated } from "@/lib/blog";
+import { getPost, getPosts, getRelated } from "@/lib/blog";
+import { SITE_URL, SITE_NAME, abs } from "@/lib/seo";
 
-// force-dynamic: renders per request, same as the preview route. Chosen after
-// Turbopack's ISR response cache corrupted for this route in dev ("require is
-// not defined" replayed from a poisoned in-memory entry — only a server
-// restart clears it). A post render is one cheap indexed API read either way.
-export const dynamic = "force-dynamic";
+// ISR: statically render known posts at build, serve them from the CDN, and
+// revalidate on the tag-based schedule (publish also triggers on-demand
+// revalidation via /api/revalidate). Cacheable + crawler-fast, which SSR
+// (force-dynamic) is not. dynamicParams lets posts created after build render
+// on first request, then cache.
+export const revalidate = 300;
+export const dynamicParams = true;
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://washermann.com";
+export async function generateStaticParams() {
+  try {
+    const { posts } = await getPosts(1);
+    return posts.map((p) => ({ slug: p.slug }));
+  } catch {
+    // API unreachable at build — ship with none; all posts render on demand.
+    return [];
+  }
+}
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -27,7 +38,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: { canonical: `${SITE_URL}/blog/${post.slug}` },
+    alternates: {
+      canonical: `${SITE_URL}/blog/${post.slug}`,
+      types: { "application/rss+xml": `${SITE_URL}/blog/rss.xml` },
+    },
     openGraph: {
       title,
       description,
@@ -53,17 +67,36 @@ export default async function BlogPostPage({ params }: Params) {
 
   const related = await getRelated(slug);
 
+  const url = `${SITE_URL}/blog/${post.slug}`;
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: post.title,
-    description: post.excerpt || undefined,
-    image: post.coverImageUrl || undefined,
-    datePublished: post.publishedAt,
-    dateModified: post.updatedAt,
-    author: { "@type": "Person", name: post.author.name },
-    publisher: { "@type": "Organization", name: "Washermann", url: SITE_URL },
-    mainEntityOfPage: `${SITE_URL}/blog/${post.slug}`,
+    "@graph": [
+      {
+        "@type": "BlogPosting",
+        headline: post.title,
+        description: post.excerpt || undefined,
+        image: post.coverImageUrl || abs("/logo.png"),
+        datePublished: post.publishedAt,
+        dateModified: post.updatedAt,
+        author: { "@type": "Person", name: post.author.name },
+        publisher: {
+          "@type": "Organization",
+          name: SITE_NAME,
+          url: SITE_URL,
+          logo: { "@type": "ImageObject", url: abs("/logo.png") },
+        },
+        mainEntityOfPage: { "@type": "WebPage", "@id": url },
+        url,
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+          { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` },
+          { "@type": "ListItem", position: 3, name: post.title, item: url },
+        ],
+      },
+    ],
   };
 
   return (
