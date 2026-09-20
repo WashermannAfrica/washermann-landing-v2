@@ -39,10 +39,10 @@ export const BRAND_MINT = "#3ECFAB";
  * URLs here hurt more than help, so leave this empty until they're confirmed.
  */
 export const SOCIAL_LINKS: string[] = [
-  // "https://www.instagram.com/washermann",
-  // "https://twitter.com/washermann",
-  // "https://www.facebook.com/washermann",
-  // "https://www.linkedin.com/company/washermann",
+  "https://www.instagram.com/washermann_africa",
+  "https://x.com/washermann_",
+  "https://www.linkedin.com/company/washermann-africa/",
+  "https://www.facebook.com/profile.php?id=61590357915442",
 ];
 
 /** Absolute URL helper. */

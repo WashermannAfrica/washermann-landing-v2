@@ -1,11 +1,12 @@
 // Central site constants. Swap the dummy WhatsApp number for the real one here.
 
 export const SITE = {
-  email: "hello@washermann.com",
-  instagram: "https://instagram.com/washermann",
-  twitter: "https://x.com/washermann",
-  // TODO: replace with the real WhatsApp business number (international format, no +).
-  whatsappNumber: "2348000000000",
+  email: "info@washermann.com",
+  instagram: "https://www.instagram.com/washermann_africa",
+  twitter: "https://x.com/washermann_",
+  linkedin: "https://www.linkedin.com/company/washermann-africa/",
+  facebook: "https://www.facebook.com/profile.php?id=61590357915442",
+  whatsappNumber: "+2349049507121",
 };
 
 /** Build a wa.me link with a pre-filled message. */
