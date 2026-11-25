@@ -4,6 +4,17 @@ const API_BASE = process.env.API_URL || "http://localhost:3000/api/v1";
 
 export type FundingStatus = "active" | "paid" | "expired" | "cancelled";
 
+/** Mirrors the API's OrderFlow: wash flows plus the rep-only logistics legs. */
+export type FundingFlow =
+  | "wash_fold"
+  | "wash_iron"
+  | "bundle"
+  | "logistics_delivery" // shop → customer (deliver clean)
+  | "logistics_collect"; // customer → shop (collect dirty)
+
+export const isLogisticsFlow = (flow: FundingFlow): boolean =>
+  flow === "logistics_delivery" || flow === "logistics_collect";
+
 export interface FundingView {
   token: string;
   status: FundingStatus;
@@ -14,7 +25,7 @@ export interface FundingView {
   customerName: string;
   orderRef: string;
   itemCount: number | null;
-  flow: "wash_fold" | "wash_iron" | "bundle";
+  flow: FundingFlow;
   scheduledPickupAt: string | null;
 }
 

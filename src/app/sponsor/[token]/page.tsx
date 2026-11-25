@@ -3,7 +3,12 @@ import { notFound } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SponsorForm from "@/components/SponsorForm";
-import { getFundingView, type FundingView } from "@/lib/funding";
+import {
+  getFundingView,
+  isLogisticsFlow,
+  type FundingFlow,
+  type FundingView,
+} from "@/lib/funding";
 
 // Per-token, live payment state — never prerender or index.
 export const dynamic = "force-dynamic";
@@ -11,17 +16,49 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 type Params = { params: Promise<{ token: string }> };
 
-const FLOW_LABEL: Record<FundingView["flow"], string> = {
+const SERVICE_LABEL: Record<FundingFlow, string> = {
   wash_fold: "Wash & Fold",
   wash_iron: "Wash & Iron",
   bundle: "Bundle",
+  logistics_collect: "Laundry pickup",
+  logistics_delivery: "Laundry delivery",
 };
 
-function formatPickup(iso: string | null): string | null {
+function formatDateTime(iso: string | null): string | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
   return d.toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" });
+}
+
+function formatDate(iso: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("en-NG", { dateStyle: "medium" });
+}
+
+/** Copy that differs between a wash order and a rep-only logistics leg. */
+function presentation(view: FundingView) {
+  const logistics = isLogisticsFlow(view.flow);
+  const service = SERVICE_LABEL[view.flow];
+  return {
+    logistics,
+    service,
+    eyebrow: logistics ? service : "Sponsor a wash",
+    // For logistics the named party on the order is the vendor, not the payer,
+    // so we keep the heading about the trip rather than "<name>'s laundry".
+    heading: logistics
+      ? `Pay for your ${service.toLowerCase()}`
+      : `Pay for ${view.customerName}’s laundry`,
+    scheduleLabel: view.flow === "logistics_delivery" ? "Delivery" : "Pickup",
+    escrow: logistics
+      ? "Washermann holds your payment in escrow and only releases it once the trip is complete."
+      : "Washermann holds every payment in escrow and only releases it once the laundry is delivered.",
+    paidBody: logistics
+      ? `This ${service.toLowerCase()} (${view.orderRef}) has already been paid for. Thank you!`
+      : `${view.customerName}’s laundry (${view.orderRef}) has already been paid for. Thank you for your kindness!`,
+  };
 }
 
 export default async function SponsorPage({ params }: Params) {
@@ -29,16 +66,18 @@ export default async function SponsorPage({ params }: Params) {
   const view = await getFundingView(token);
   if (!view) notFound();
 
-  const pickup = formatPickup(view.scheduledPickupAt);
+  const p = presentation(view);
+  const scheduledAt = formatDateTime(view.scheduledPickupAt);
+  const expiresOn = formatDate(view.expiresAt);
   const closed = view.status !== "active";
   const closedCopy: Record<string, { title: string; body: string }> = {
     paid: {
       title: "Already taken care of 🎉",
-      body: `${view.customerName}'s laundry (${view.orderRef}) has already been paid for. Thank you for your kindness!`,
+      body: p.paidBody,
     },
     expired: {
       title: "This link has expired",
-      body: "Sponsor links stay open for a limited time. Ask your friend to share a fresh one from the Washermann app.",
+      body: "Payment links stay open for a limited time. Please ask for a fresh link and try again.",
     },
     cancelled: {
       title: "This link is no longer active",
@@ -52,10 +91,10 @@ export default async function SponsorPage({ params }: Params) {
 
       <div className="bg-wm-green pb-16 pt-28 text-center">
         <p className="font-body text-sm uppercase tracking-widest text-wm-mint">
-          Sponsor a wash
+          {p.eyebrow}
         </p>
         <h1 className="mt-2 font-display text-3xl text-white sm:text-4xl">
-          Pay for {view.customerName}&rsquo;s laundry
+          {p.heading}
         </h1>
       </div>
 
@@ -73,15 +112,19 @@ export default async function SponsorPage({ params }: Params) {
               <div className="mt-2 flex items-center justify-between">
                 <span className="font-body text-sm text-wm-green/70">Service</span>
                 <span className="font-body text-sm font-semibold text-wm-green">
-                  {FLOW_LABEL[view.flow]}
-                  {view.itemCount ? ` · ${view.itemCount} item${view.itemCount === 1 ? "" : "s"}` : ""}
+                  {p.service}
+                  {view.itemCount
+                    ? ` · ${view.itemCount} item${view.itemCount === 1 ? "" : "s"}`
+                    : ""}
                 </span>
               </div>
-              {pickup && (
+              {scheduledAt && (
                 <div className="mt-2 flex items-center justify-between">
-                  <span className="font-body text-sm text-wm-green/70">Pickup</span>
+                  <span className="font-body text-sm text-wm-green/70">
+                    {p.scheduleLabel}
+                  </span>
                   <span className="font-body text-sm font-semibold text-wm-green">
-                    {pickup}
+                    {scheduledAt}
                   </span>
                 </div>
               )}
@@ -89,7 +132,7 @@ export default async function SponsorPage({ params }: Params) {
                 <div className="flex items-end justify-between">
                   <span className="font-body text-sm text-wm-green/70">Amount</span>
                   <span className="font-display text-3xl text-wm-green">
-                    ₦{view.amountNaira.toLocaleString("en-NG")}
+                    &#8358;{view.amountNaira.toLocaleString("en-NG")}
                   </span>
                 </div>
               </div>
@@ -104,18 +147,24 @@ export default async function SponsorPage({ params }: Params) {
                   </h2>
                   <p className="mt-2 font-body text-sm text-wm-green/70">
                     {closedCopy[view.status]?.body ??
-                      "This funding link can no longer be paid."}
+                      "This payment link can no longer be paid."}
                   </p>
                 </div>
               ) : (
-                <SponsorForm token={view.token} amountNaira={view.amountNaira} />
+                <>
+                  <SponsorForm token={view.token} amountNaira={view.amountNaira} />
+                  {expiresOn && (
+                    <p className="mt-3 text-center font-body text-xs text-wm-green/50">
+                      This link expires on {expiresOn}.
+                    </p>
+                  )}
+                </>
               )}
             </div>
           </div>
 
           <p className="mt-6 text-center font-body text-xs text-wm-green/50">
-            Washermann holds every payment in escrow and only releases it once the
-            laundry is delivered.
+            {p.escrow}
           </p>
         </div>
       </main>

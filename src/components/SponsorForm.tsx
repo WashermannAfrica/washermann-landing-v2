@@ -112,7 +112,11 @@ export default function SponsorForm({
       </div>
 
       {error && (
-        <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 font-body text-sm text-red-700">
+        <p
+          role="alert"
+          aria-live="assertive"
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 font-body text-sm text-red-700"
+        >
           {error}
         </p>
       )}
