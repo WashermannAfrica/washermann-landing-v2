@@ -9,6 +9,13 @@ export const SITE = {
   whatsappNumber: "+2349049507121",
 };
 
+// Vendor portal (a separate app). Set NEXT_PUBLIC_PORTAL_URL per environment
+// (e.g. http://localhost:3007 in dev). The upsell/login links point here.
+export const PORTAL_URL =
+  process.env.NEXT_PUBLIC_PORTAL_URL || "https://vendor.washermann.com";
+export const PORTAL_SIGNUP_URL = `${PORTAL_URL}/signup`;
+export const PORTAL_SIGNIN_URL = `${PORTAL_URL}/login`;
+
 /** Build a wa.me link with a pre-filled message. */
 export function whatsappLink(message: string): string {
   return `https://wa.me/${SITE.whatsappNumber}?text=${encodeURIComponent(message)}`;

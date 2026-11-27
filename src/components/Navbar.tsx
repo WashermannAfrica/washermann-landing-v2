@@ -13,6 +13,7 @@ import { usePathname } from "next/navigation";
 // moves. Scrolling explicitly also lets us offset the fixed 80px header, which a
 // raw anchor jump would hide the section behind.
 const LINKS = [
+  { label: "Book a pickup", href: "/book" },
   { label: "Why Washermann", href: "/#why" },
   { label: "How It Works", href: "/#how-it-works" },
   { label: "Who it's for", href: "/#who" },
