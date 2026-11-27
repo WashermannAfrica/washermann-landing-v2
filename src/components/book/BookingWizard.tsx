@@ -165,6 +165,15 @@ export default function BookingWizard({ onSessionExpired }: BookingWizardProps) 
           )}
         </button>
 
+        {created.trackingToken && (
+          <p className="text-center font-body text-xs text-wm-green/60">
+            <a href={`/track/${created.trackingToken}`} className="underline">
+              Track this booking
+            </a>{" "}
+            with code <span className="font-semibold text-wm-green">{created.trackingToken}</span>
+          </p>
+        )}
+
         <UpsellCard
           id="post-booking"
           title="Save time next time"

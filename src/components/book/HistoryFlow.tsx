@@ -101,7 +101,13 @@ export default function HistoryFlow({ hasSession }: { hasSession: boolean }) {
             </p>
             {r.trackingToken && (
               <p className="mt-1 font-body text-xs text-wm-green/60">
-                Tracking: <span className="font-semibold text-wm-green">{r.trackingToken}</span>
+                Tracking:{" "}
+                <Link
+                  href={`/track/${r.trackingToken}`}
+                  className="font-semibold text-wm-green underline"
+                >
+                  {r.trackingToken}
+                </Link>
               </p>
             )}
             {r.recipient && (

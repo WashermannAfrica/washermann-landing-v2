@@ -14,6 +14,7 @@ import { usePathname } from "next/navigation";
 // raw anchor jump would hide the section behind.
 const LINKS = [
   { label: "Book a pickup", href: "/book" },
+  { label: "Track", href: "/track" },
   { label: "Why Washermann", href: "/#why" },
   { label: "How It Works", href: "/#how-it-works" },
   { label: "Who it's for", href: "/#who" },
