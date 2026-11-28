@@ -79,7 +79,22 @@ export default function PhoneOtpGate({
     setBusy(true);
     setError(null);
     try {
-      const { cooldownSeconds } = await startOtp(e164);
+      const { cooldownSeconds, verificationRequired } = await startOtp(e164);
+      if (verificationRequired === false) {
+        // SMS verification is switched off upstream — no code to enter; go
+        // straight to claiming the session.
+        const result = await verifyOtp({
+          phone: e164,
+          consent: true,
+          name: collectName && name.trim() ? name.trim() : undefined,
+        });
+        if (result.accountExists) {
+          setAccountExists(true);
+          return;
+        }
+        onVerified(result);
+        return;
+      }
       setStep("otp");
       startCooldown(cooldownSeconds || 60);
     } catch (err) {
