@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { MapPin, Search, Check, X, Loader2 } from "lucide-react";
-import { geocodeAddress, MAPBOX_ENABLED, type GeocodeHit } from "@/lib/mapbox";
+import {
+  placeAutocomplete,
+  placeDetails,
+  newSessionToken,
+  type PlaceSuggestion,
+} from "@/lib/places";
 
 export interface SelectedAddress {
   address: string;
@@ -22,9 +27,10 @@ interface AddressSearchProps {
 }
 
 /**
- * Address → coordinates picker. The user searches, picks a real place, and we
- * capture its latitude/longitude (the backend requires them). Editing the text
- * after a pick clears the captured point so a stale coordinate is never sent.
+ * Address → coordinates picker backed by Google Places (via our backend proxy).
+ * The user searches, picks a real place, and we resolve its latitude/longitude
+ * (the backend requires them). Editing the text after a pick clears the captured
+ * point so a stale coordinate is never sent.
  */
 export default function AddressSearch({
   label,
@@ -37,29 +43,36 @@ export default function AddressSearch({
   placeholder = "Search a street, area or landmark",
 }: AddressSearchProps) {
   const [query, setQuery] = useState(value?.address ?? "");
-  const [hits, setHits] = useState<GeocodeHit[]>([]);
+  const [hits, setHits] = useState<PlaceSuggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [searching, setSearching] = useState(false);
+  const [resolving, setResolving] = useState(false);
   const [lookupError, setLookupError] = useState("");
   const [noHits, setNoHits] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
+  // One Places session token per "start typing → pick" cycle (billing).
+  const sessionRef = useRef("");
 
   const selected = value != null && value.address === query;
 
   useEffect(() => {
-    if (!MAPBOX_ENABLED) return;
     const q = query.trim();
     if (selected || q.length < 3) {
       setHits([]);
       setNoHits(false);
       return;
     }
+    if (!sessionRef.current) sessionRef.current = newSessionToken();
     const ctrl = new AbortController();
     const t = setTimeout(async () => {
       setSearching(true);
       setLookupError("");
       try {
-        const found = await geocodeAddress(q, { proximity, signal: ctrl.signal });
+        const found = await placeAutocomplete(q, {
+          sessionToken: sessionRef.current,
+          proximity,
+          signal: ctrl.signal,
+        });
         setHits(found);
         setNoHits(found.length === 0);
         setOpen(true);
@@ -86,12 +99,24 @@ export default function AddressSearch({
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  function pick(h: GeocodeHit) {
-    setQuery(h.placeName);
-    onChange({ address: h.placeName, latitude: h.latitude, longitude: h.longitude });
-    setHits([]);
+  async function pick(h: PlaceSuggestion) {
     setOpen(false);
+    setHits([]);
     setNoHits(false);
+    setQuery(h.placeName);
+    setResolving(true);
+    setLookupError("");
+    try {
+      const loc = await placeDetails(h.placeId, sessionRef.current);
+      onChange({ address: loc.placeName, latitude: loc.latitude, longitude: loc.longitude });
+      setQuery(loc.placeName);
+    } catch (err) {
+      setLookupError((err as Error).message || "Could not load that address.");
+      onChange(null);
+    } finally {
+      sessionRef.current = ""; // close the billable session; next search starts a new one
+      setResolving(false);
+    }
   }
 
   function onType(v: string) {
@@ -104,6 +129,7 @@ export default function AddressSearch({
     onChange(null);
     setHits([]);
     setNoHits(false);
+    sessionRef.current = "";
   }
 
   const labelEl = (
@@ -111,18 +137,6 @@ export default function AddressSearch({
       {label} {required && <span className="text-wm-pink">*</span>}
     </label>
   );
-
-  if (!MAPBOX_ENABLED) {
-    return (
-      <div className="space-y-1.5">
-        {labelEl}
-        <div className="rounded-2xl bg-wm-cream px-4 py-3 font-body text-sm text-wm-green">
-          Address search is unavailable: <code>NEXT_PUBLIC_MAPBOX_TOKEN</code> isn&apos;t set.
-          Please try again later.
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-1.5" ref={boxRef}>
@@ -143,7 +157,7 @@ export default function AddressSearch({
             error ? "border-red-300" : selected ? "border-wm-mint-btn/40" : "border-transparent"
           } focus:border-wm-green/30`}
         />
-        {searching ? (
+        {searching || resolving ? (
           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-wm-mint-btn">
             <Loader2 size={16} className="animate-spin" />
           </span>
@@ -162,7 +176,7 @@ export default function AddressSearch({
           <div className="absolute z-20 mt-2 max-h-64 w-full overflow-auto rounded-2xl border border-wm-green/10 bg-white p-1.5 shadow-lg">
             {hits.map((h) => (
               <button
-                key={h.id}
+                key={h.placeId}
                 type="button"
                 onClick={() => pick(h)}
                 className="flex w-full items-start gap-2.5 rounded-xl px-3 py-2.5 text-left hover:bg-wm-gray"

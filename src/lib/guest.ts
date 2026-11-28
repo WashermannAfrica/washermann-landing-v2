@@ -95,17 +95,23 @@ async function post<T>(url: string, body?: unknown): Promise<T> {
 
 // ─── OTP ──────────────────────────────────────────────────────────────────────
 
-export async function startOtp(phone: string): Promise<{ cooldownSeconds: number }> {
-  return post<{ cooldownSeconds: number }>("/api/guest/start", { phone });
+export interface OtpStart {
+  cooldownSeconds: number;
+  /** false when the backend has phone verification switched off (SMS outage). */
+  verificationRequired?: boolean;
 }
 
-export async function resendOtp(phone: string): Promise<{ cooldownSeconds: number }> {
-  return post<{ cooldownSeconds: number }>("/api/guest/resend", { phone });
+export async function startOtp(phone: string): Promise<OtpStart> {
+  return post<OtpStart>("/api/guest/start", { phone });
+}
+
+export async function resendOtp(phone: string): Promise<OtpStart> {
+  return post<OtpStart>("/api/guest/resend", { phone });
 }
 
 export async function verifyOtp(input: {
   phone: string;
-  otp: string;
+  otp?: string;
   consent: boolean;
   name?: string;
 }): Promise<VerifyResult> {
